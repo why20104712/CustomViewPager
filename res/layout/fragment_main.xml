@@ -5,6 +5,14 @@
     android:gravity="center_horizontal"
     android:orientation="vertical"
     tools:context=".MainActivity" >
+    
+    <RadioGroup 
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/radioGroup"
+        android:gravity="center"
+        android:orientation="horizontal"
+        />
 
     <cn.why.customviewpager.CustomViewPager
         android:id="@+id/viewPager"
