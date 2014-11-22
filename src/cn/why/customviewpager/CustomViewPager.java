@@ -12,6 +12,7 @@ public class CustomViewPager extends ViewGroup{
 
 	private GestureDetector gestureDetector;
 	private Context context;
+	private CustomScoller scoller;
 	
 	public CustomViewPager(Context context, AttributeSet attrs) {
 		super(context, attrs);
@@ -20,8 +21,8 @@ public class CustomViewPager extends ViewGroup{
 	}
 
 	private void initView() {
+			scoller = new CustomScoller(context);
 			gestureDetector = new GestureDetector(context, new OnGestureListener() {
-				
 				@Override
 				public boolean onSingleTapUp(MotionEvent arg0) {
 					return false;
@@ -55,20 +56,17 @@ public class CustomViewPager extends ViewGroup{
 			});
 	}
 
-	/**
-	 * …Ë÷√≤ºæ÷Œª÷√
-	 */
 	@Override
 	protected void onLayout(boolean arg0, int arg1, int arg2, int arg3, int arg4) {
 		for (int i = 0; i < getChildCount(); i++) {
-			View  view  = getChildAt(i);//ªÒµ√◊”≤ºæ÷
-			view.layout(0+i*getWidth(), 0, getWidth()+i*getWidth(), getHeight());//…Ë÷√◊”≤ºæ÷µƒŒª÷√
+			View  view  = getChildAt(i);
+			view.layout(0+i*getWidth(), 0, getWidth()+i*getWidth(), getHeight());
 		}
 	}
 
-	private int currentViewId = 0;//µ±«∞ ”Õºviewµƒid
+	private int currentViewId = 0;
 	private float startX;
-	
+	private int nextId = 0;
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		super.onTouchEvent(event);
@@ -82,7 +80,6 @@ public class CustomViewPager extends ViewGroup{
 				
 				break;
 			case MotionEvent.ACTION_UP:
-				int nextId = 0;
 				if (event.getX() - startX > getWidth()/2) {
 					nextId = currentViewId - 1;
 				}else if (startX - event.getX() > getWidth()/2) {
@@ -90,21 +87,29 @@ public class CustomViewPager extends ViewGroup{
 				}else {
 					nextId = currentViewId;
 				} 
+				nextId = (nextId >=0)?nextId:0;//nextId‰∏çÂèØÂ∞è‰∫é0
+				currentViewId = (nextId >= 0)?nextId:0;
+				currentViewId = (nextId <= getChildCount() - 1)?nextId:(getChildCount() - 1);
 				moveToNext(nextId);
 				break;
 			}
 		
 		return true;
 	}
-	/**
-	 * “∆∂ØÕº∆¨µΩœ¬“ª∏ˆview
-	 * @param nextId
-	 */
 	private void moveToNext(int nextId) {
-		//≈–∂œŒª÷√µƒ∫œ¿Ì–‘
-		currentViewId = (nextId >= 0)?nextId:0;
-		currentViewId = (nextId <= getChildCount() - 1)?nextId:(getChildCount() - 1);
-		
-		scrollTo(currentViewId*getWidth(), 0);
+		int distance = currentViewId*getWidth() - getScrollX();//ÁßªÂä®ÁöÑË∑ùÁ¶ª = ÊúÄÁªà‰ΩçÁΩÆ - ÂºÄÂßã‰ΩçÁΩÆ
+		scoller.startScroll(getScrollX(), 0, distance, 0);
+		invalidate();
+	}
+	/**
+	 * ÊØèÊ¨°ÊâßË°åinvalidateÊñπÊ≥ïÔºåÈÉΩ‰ºöË∞ÉÁî®computeScrollÊñπÊ≥ï
+	 */
+	@Override
+	public void computeScroll() {
+		if (scoller.computeScollOffset()) {
+			int offset = (int) scoller.getCurrentX();
+			scrollTo(offset, 0);
+			invalidate();
+		}
 	}
 }
