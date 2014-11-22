@@ -16,6 +16,9 @@ public class CustomViewPager extends ViewGroup{
 //	private CustomScoller scoller;
 	private Scroller scoller;
 	private boolean isFling;
+	private int currentViewId = 0;
+	private float startX;
+	private int nextId = 0;
 	public CustomViewPager(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		this.context = context;
@@ -49,7 +52,7 @@ public class CustomViewPager extends ViewGroup{
 					}else if(velocityX<0 && currentViewId<getChildCount()-1){ // 快速向左滑动
 						currentViewId++;
 					}
-					moveToNext(currentViewId);
+					moveToDest(currentViewId);
 					return false;
 				}
 				
@@ -68,9 +71,6 @@ public class CustomViewPager extends ViewGroup{
 		}
 	}
 
-	private int currentViewId = 0;
-	private float startX;
-	private int nextId = 0;
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		super.onTouchEvent(event);
@@ -95,7 +95,7 @@ public class CustomViewPager extends ViewGroup{
 					nextId = (nextId >=0)?nextId:0;//nextId不可小于0
 					currentViewId = (nextId >= 0)?nextId:0;
 					currentViewId = (nextId <= getChildCount() - 1)?nextId:(getChildCount() - 1);
-					moveToNext(nextId);
+					moveToDest(nextId);
 				}
 				isFling = false;
 				break;
@@ -103,9 +103,13 @@ public class CustomViewPager extends ViewGroup{
 		
 		return true;
 	}
-	private void moveToNext(int nextId) {
+	private void moveToDest(int nextId) {
 		int distance = currentViewId*getWidth() - getScrollX();//移动的距离 = 最终位置 - 开始位置
 		scoller.startScroll(getScrollX(), 0, distance, 0);
+		//触发listener事件
+		if(pageChangedListener!=null){
+			pageChangedListener.moveToDest(nextId);
+		}
 		invalidate();
 	}
 	/**
@@ -119,4 +123,21 @@ public class CustomViewPager extends ViewGroup{
 			invalidate();
 		}
 	}
+	private CustomPageChangedListener pageChangedListener;
+	public CustomPageChangedListener getPageChangedListener() {
+		return pageChangedListener;
+	}
+
+	public void setPageChangedListener(CustomPageChangedListener pageChangedListener) {
+		this.pageChangedListener = pageChangedListener;
+	}
+	/**
+	 * 自定义页面变化事件,监听接口
+	 * @author why
+	 *
+	 */
+	public interface CustomPageChangedListener{
+		public void moveToDest(int currId);
+	}
+	
 }

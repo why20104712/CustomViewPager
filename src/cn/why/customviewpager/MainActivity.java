@@ -1,8 +1,10 @@
 package cn.why.customviewpager;
 
+import cn.why.customviewpager.CustomViewPager.CustomPageChangedListener;
 import android.app.Activity;
 import android.os.Bundle;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
@@ -18,6 +20,12 @@ public class MainActivity extends Activity {
         	imageView.setBackgroundResource(ids[i]);
         	customViewPager.addView(imageView);
 		}
+        //使用自定义的页面变化事件
+        customViewPager.setPageChangedListener(new CustomPageChangedListener() {
+			public void moveToDest(int currId) {
+				Toast.makeText(getApplicationContext(), "页面发生了改变", Toast.LENGTH_SHORT).show();
+			}
+		});
     }
     
     
